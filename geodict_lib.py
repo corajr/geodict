@@ -136,7 +136,7 @@ def setup_regions_cache(cursor):
     candidate_rows = cursor.fetchall()
     
     for candidate_row in candidate_rows:
-        candidate_dict = get_dict_from_row(cursor, candidate_row)
+        candidate_dict = data.get_dict_from_row(cursor, candidate_row)
         last_word = candidate_dict['last_word'].lower()
         if last_word not in regions_cache:
             regions_cache[last_word] = []
@@ -464,12 +464,6 @@ def pull_word_from_end(text, index, use_cache=True):
 
     return result
 
-# Converts the result of a MySQL fetch into an associative dictionary, rather than a numerically indexed list
-def get_dict_from_row(cursor, row):
-    d = {}
-    for idx,col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
 
 # Types of locations we'll be looking for
 token_definitions = {
