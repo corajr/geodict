@@ -30,4 +30,43 @@ def load_cities(cursor):
         db.cities.insert(document)
 
 
+def load_countries(cursor):
+    db = Connection().geodict
+    reader = csv.reader(open(geodict_config.source_folder+'countrypositions.csv', 'rb'))
+    country_positions = {}
+
+    for row in reader:
+        try:
+            country_code = row[0]
+            lat = row[1]
+            lon = row[2]
+        except:
+            continue
+
+        country_positions[country_code] = { 'lat': lat, 'lon': lon }
+        
+    reader = csv.reader(open(geodict_config.source_folder+'countrynames.csv', 'rb'))
+
+    for row in reader:
+        try:
+            country_code = row[0]
+            country_names = row[1]
+        except:
+            continue    
+
+        country_names_list = country_names.split(' | ')
+        
+        lat = country_positions[country_code]['lat']
+        lon = country_positions[country_code]['lon']
+        
+        for country_name in country_names_list:
+        
+            country_name = country_name.strip()
+            
+            last_word, index, skipped = pull_word_from_end(country_name, len(country_name)-1, False)
+            document = { "country": country_name,"country_code":country_code,"lat":lat,"lon":lon,"last_word": last_word }
+            db.countries.insert(document)        
+
+
 load_cities({})
+load_countries({})
