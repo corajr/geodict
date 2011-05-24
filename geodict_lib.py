@@ -14,7 +14,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import MySQLdb, string, StringIO
+import string, StringIO
 import geodict_config
 from tempfile import TemporaryFile
 from struct import unpack, pack, calcsize
@@ -27,15 +27,8 @@ regions_cache   = data.setup_regions_cache()
 
 def find_locations_in_text(text):
 
-    try:
-        cursor = data.get_database_connection()
-    except:
-        print "Database connection failed. Have you set up geodict_config.py with your credentials?"
-        return None
-
     current_index = len(text)-1
     result = []
-
     
     # This loop goes through the text string in *reverse* order. Since locations in English are typically
     # described with the broadest category last, preceded by more and more specific designations towards
