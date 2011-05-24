@@ -36,8 +36,6 @@ def find_locations_in_text(text):
     current_index = len(text)-1
     result = []
 
-#    setup_countries_cache(cursor)
-#    setup_regions_cache(cursor)
     
     # This loop goes through the text string in *reverse* order. Since locations in English are typically
     # described with the broadest category last, preceded by more and more specific designations towards
@@ -81,7 +79,7 @@ def find_locations_in_text(text):
                 else:
                     # The meat of the algorithm, checks the ending of the current string against the
                     # token testing function, eg seeing if it matches a country name
-                    token_result = match_function(cursor, text, token_index, token_result)
+                    token_result = match_function( text, token_index, token_result)
                     if token_position == 0:
                         match_cache[token_name] = token_result
                 
@@ -114,7 +112,7 @@ def find_locations_in_text(text):
 # Functions that look at a small portion of the text, and try to identify any location identifiers
 
 # Matches the current fragment against our database of countries
-def is_country(cursor, text, text_starting_index, previous_result):
+def is_country( text, text_starting_index, previous_result):
         
     current_word = ''
     current_index = text_starting_index
@@ -210,7 +208,7 @@ def is_country(cursor, text, text_starting_index, previous_result):
 
 # Looks through our database of 2 million towns and cities around the world to locate any that match the
 # words at the end of the current text fragment
-def is_city(cursor, text, text_starting_index, previous_result):
+def is_city( text, text_starting_index, previous_result):
     
     # If we're part of a sequence, then use any country or region information to narrow down our search
     country_code = None
@@ -284,7 +282,7 @@ def is_city(cursor, text, text_starting_index, previous_result):
     return current_result
 
 # This looks for sub-regions within countries. At the moment the only values in the database are for US states
-def is_region(cursor, text, text_starting_index, previous_result):
+def is_region( text, text_starting_index, previous_result):
 
     # Narrow down the search by country, if we already have it
     country_code = None
@@ -370,7 +368,7 @@ def is_region(cursor, text, text_starting_index, previous_result):
 # A special case - used to look for 'at' or 'in' before a possible location word. This helps me be more certain
 # that it really is a location in this context. Think 'the New York Times' vs 'in New York' - with the latter
 # fragment we can be pretty sure it's talking about a location
-def is_location_word(cursor, text, text_starting_index, previous_result):
+def is_location_word( text, text_starting_index, previous_result):
 
     current_index = text_starting_index
     current_word, current_index, end_skipped = pull_word_from_end(text, current_index)
