@@ -414,16 +414,6 @@ def is_location_word(cursor, text, text_starting_index, previous_result):
 
     return previous_result
 
-# Utility functions
-
-def get_database_connection():
-
-    db=MySQLdb.connect(host=geodict_config.host,user=geodict_config.user,passwd=geodict_config.password,port=geodict_config.port)
-    cursor=db.cursor()
-    cursor.execute('USE '+geodict_config.database+';')
-
-    return cursor
-
 
 # Characters to ignore when pulling out words
 whitespace = set(string.whitespace+"'\",.-/\n\r<>")
