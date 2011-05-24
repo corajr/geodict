@@ -18,13 +18,17 @@ import MySQLdb, string, StringIO
 import geodict_config
 from tempfile import TemporaryFile
 from struct import unpack, pack, calcsize
-
+import data
 # The main entry point. This function takes an unstructured text string and returns a list of all the
 # fragments it could identify as locations, together with lat/lon positions
+
+countries_cache = data.setup_countries_cache()
+regions_cache   = data.setup_regions_cache()
+
 def find_locations_in_text(text):
 
     try:
-        cursor = get_database_connection()
+        cursor = data.get_database_connection()
     except:
         print "Database connection failed. Have you set up geodict_config.py with your credentials?"
         return None
@@ -32,8 +36,8 @@ def find_locations_in_text(text):
     current_index = len(text)-1
     result = []
 
-    setup_countries_cache(cursor)
-    setup_regions_cache(cursor)
+#    setup_countries_cache(cursor)
+#    setup_regions_cache(cursor)
     
     # This loop goes through the text string in *reverse* order. Since locations in English are typically
     # described with the broadest category last, preceded by more and more specific designations towards
@@ -110,7 +114,7 @@ def find_locations_in_text(text):
 # Functions that look at a small portion of the text, and try to identify any location identifiers
 
 # Caches the countries and regions tables in memory
-countries_cache = {}
+#countries_cache = {}
 
 def setup_countries_cache(cursor):
     select = 'SELECT * FROM countries;'
@@ -124,7 +128,7 @@ def setup_countries_cache(cursor):
             countries_cache[last_word] = []
         countries_cache[last_word].append(candidate_dict)
 
-regions_cache = {}
+#regions_cache = {}
 
 def setup_regions_cache(cursor):
     select = 'SELECT * FROM regions;'
@@ -261,39 +265,11 @@ def is_city(cursor, text, text_starting_index, previous_result):
             current_word = pulled_word
             word_end_index = (text_starting_index-end_skipped)
 
-            select = 'SELECT * FROM cities WHERE last_word=%s'
-            values = (pulled_word, )
-
-            if country_code is not None:
-                select += ' AND country=%s'
-
-            if region_code is not None:
-                select += ' AND region_code=%s'
-
-            # There may be multiple cities with the same name, so pick the one with the largest population
-            select += ' ORDER BY population;'
-            
-            # Unfortunately tuples are immutable, so I have to use this logic to set up the correct ones
-            if country_code is None and region_code is None:
-                values = (current_word, )
-            elif country_code is not None and region_code is None:
-                values = (current_word, country_code)
-            elif country_code is None and region_code is not None:
-                values = (current_word, region_code)
-            else:
-                values = (current_word, country_code, region_code)
-
-#            print "Calling '"+(select % values)+"'"
-            cursor.execute(select, values)
-            candidate_rows = cursor.fetchall()
-            if len(candidate_rows) < 1:
+            name_map  = data.get_cities(pulled_word,current_word,country_code,region_code)
+            #print candidate_rows
+            if len(name_map) < 1:
                 break
             
-            name_map = {}
-            for candidate_row in candidate_rows:
-                candidate_dict = get_dict_from_row(cursor, candidate_row)
-                name = candidate_dict['city'].lower()
-                name_map[name] = candidate_dict
         else:
             current_word = pulled_word+' '+current_word
 
