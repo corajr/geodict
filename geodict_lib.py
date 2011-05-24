@@ -113,35 +113,6 @@ def find_locations_in_text(text):
 
 # Functions that look at a small portion of the text, and try to identify any location identifiers
 
-# Caches the countries and regions tables in memory
-#countries_cache = {}
-
-def setup_countries_cache(cursor):
-    select = 'SELECT * FROM countries;'
-    cursor.execute(select)
-    candidate_rows = cursor.fetchall()
-    
-    for candidate_row in candidate_rows:
-        candidate_dict = data.get_dict_from_row(cursor, candidate_row)
-        last_word = candidate_dict['last_word'].lower()
-        if last_word not in countries_cache:
-            countries_cache[last_word] = []
-        countries_cache[last_word].append(candidate_dict)
-
-#regions_cache = {}
-
-def setup_regions_cache(cursor):
-    select = 'SELECT * FROM regions;'
-    cursor.execute(select)
-    candidate_rows = cursor.fetchall()
-    
-    for candidate_row in candidate_rows:
-        candidate_dict = data.get_dict_from_row(cursor, candidate_row)
-        last_word = candidate_dict['last_word'].lower()
-        if last_word not in regions_cache:
-            regions_cache[last_word] = []
-        regions_cache[last_word].append(candidate_dict)
-
 # Matches the current fragment against our database of countries
 def is_country(cursor, text, text_starting_index, previous_result):
         
