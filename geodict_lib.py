@@ -122,7 +122,7 @@ def setup_countries_cache(cursor):
     candidate_rows = cursor.fetchall()
     
     for candidate_row in candidate_rows:
-        candidate_dict = get_dict_from_row(cursor, candidate_row)
+        candidate_dict = data.get_dict_from_row(cursor, candidate_row)
         last_word = candidate_dict['last_word'].lower()
         if last_word not in countries_cache:
             countries_cache[last_word] = []
