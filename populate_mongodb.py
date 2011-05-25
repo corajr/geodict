@@ -68,5 +68,45 @@ def load_countries(cursor):
             db.countries.insert(document)        
 
 
+def load_regions():
+    db = Connection().geodict
+    reader = csv.reader(open(geodict_config.source_folder+'us_statepositions.csv', 'rb'))
+    us_state_positions = {}
+
+    for row in reader:
+        try:
+            region_code = row[0]
+            lat = row[1]
+            lon = row[2]
+        except:
+            continue
+
+        us_state_positions[region_code] = { 'lat': lat, 'lon': lon }
+    
+    reader = csv.reader(open(geodict_config.source_folder+'us_statenames.csv', 'rb'))
+
+    country_code = 'US'
+
+    for row in reader:
+        try:
+            region_code = row[0]
+            state_names = row[2]
+        except:
+            continue    
+
+        state_names_list = state_names.split('|')
+        
+        lat = us_state_positions[region_code]['lat']
+        lon = us_state_positions[region_code]['lon']
+
+        for state_name in state_names_list:
+    
+            state_name = state_name.strip()
+            
+            last_word, index, skipped = pull_word_from_end(state_name, len(state_name)-1, False)
+            document = {"region": state_name,"region_code":region_code,"country_code":country_code,"lat":lat,"lon":lon,"last_word":last_word}
+            db.regions.insert(document)
+        
 load_cities({})
 load_countries({})
+load_regions({})
