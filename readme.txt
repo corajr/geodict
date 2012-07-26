@@ -1,8 +1,7 @@
 geodict
 -------
 
-A simple Python library/command-line tool for pulling location information from unstructured text. Originally by Pete Warden.
-This version uses SQLite, which is much, much slower (by at least a factor of 10) but eliminates the need for a MySQL server.
+A simple Python library/command-line tool for pulling location information from unstructured text. This version uses SQLite, which is much, much slower (by at least a factor of 10) but eliminates the need for a MySQL server.
 
 Installing
 ----------
