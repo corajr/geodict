@@ -19,7 +19,7 @@ import tornado.ioloop
 import tornado.options
 import tornado.web
 import json
-import csv, os, os.path, MySQLdb, sys, json, csv
+import csv, os, os.path, sqlite3, sys, json, csv
 import geodict_lib, cliargs
 import cProfile
 

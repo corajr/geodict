@@ -22,8 +22,10 @@ import data
 # The main entry point. This function takes an unstructured text string and returns a list of all the
 # fragments it could identify as locations, together with lat/lon positions
 
-countries_cache = data.setup_countries_cache()
-regions_cache   = data.setup_regions_cache()
+if data.is_initialized("countries"):
+    countries_cache = data.setup_countries_cache()
+if data.is_initialized("regions"):
+    regions_cache   = data.setup_regions_cache()
 
 def find_locations_in_text(text):
 
@@ -129,7 +131,7 @@ def is_country( text, text_starting_index, previous_result):
             if last_word not in countries_cache:
                 break
             candidate_dicts = countries_cache[last_word]
-#            select = 'SELECT * FROM countries WHERE last_word=%s;'
+#            select = 'SELECT * FROM countries WHERE last_word=?;'
 #            values = (pulled_word, )
 ##            print "Calling '"+(select % values)+"'"
 #            cursor.execute(select, values)

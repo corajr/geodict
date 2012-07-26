@@ -16,7 +16,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import csv, os, os.path, MySQLdb, sys, json, csv
+import csv, os, os.path, sqlite3, sys, json
 import geodict_lib, cliargs
 import cProfile
 

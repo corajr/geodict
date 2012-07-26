@@ -17,14 +17,6 @@
 # The location of the source data to be loaded into your database
 source_folder = './source_data/'
 
-# Your MySQL user credentials
-user = 'root'
-password = ''
-
-# The address and port number of your database server
-host = 'localhost'
-port = 0
-
 # The name of the database to create
 database = 'geodict'
 

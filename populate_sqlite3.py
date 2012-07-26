@@ -1,28 +1,32 @@
 #!/usr/bin/env python
 
-import csv, os, os.path, MySQLdb
+import csv, os, os.path, sqlite3
 import geodict_config
+import data
 from geodict_lib import *
 
+def unicode_csv_reader(utf8_data, dialect=csv.excel, **kwargs):
+    csv_reader = csv.reader(utf8_data, dialect=dialect, **kwargs)
+    for row in csv_reader:
+        yield [unicode(cell, 'latin1') for cell in row]
+
 def wipe_and_init_database(cursor):
-    cursor.execute("""DROP DATABASE geodict;""")
-    cursor.execute("""CREATE DATABASE geodict;""")
-    cursor.execute("""USE geodict;""")
+    pass
 
 def load_cities(cursor):
     cursor.execute("""CREATE TABLE IF NOT EXISTS cities (
         city VARCHAR(80),
         country CHAR(2),
-        PRIMARY KEY(city, country),
         region_code CHAR(2),
         population INT,
         lat FLOAT,
         lon FLOAT,
         last_word VARCHAR(32),
-        INDEX(last_word(10)));
+        PRIMARY KEY(city, country));
     """)
+    cursor.execute("""CREATE INDEX IF NOT EXISTS cities_last_word ON cities(last_word)""")
     
-    reader = csv.reader(open(geodict_config.source_folder+'worldcitiespop.csv', 'rb'))
+    reader = unicode_csv_reader(open(geodict_config.source_folder+'worldcitiespop.csv', 'rb'))
     
     for row in reader:
         try:
@@ -43,23 +47,23 @@ def load_cities(cursor):
         last_word, index, skipped = pull_word_from_end(city, len(city)-1, False)
 
         cursor.execute("""
-            INSERT IGNORE INTO cities (city, country, region_code, population, lat, lon, last_word)
-                values (%s, %s, %s, %s, %s, %s, %s)
+            INSERT OR IGNORE INTO cities (city, country, region_code, population, lat, lon, last_word)
+                values (?, ?, ?, ?, ?, ?, ?)
             """,
             (city, country, region_code, population, lat, lon, last_word))
 
 def load_countries(cursor):
     cursor.execute("""CREATE TABLE IF NOT EXISTS countries (
         country VARCHAR(64),
-        PRIMARY KEY(country),
         country_code CHAR(2),
         lat FLOAT,
         lon FLOAT,
         last_word VARCHAR(32),
-        INDEX(last_word(10)));
+        PRIMARY KEY(country));
     """)
+    cursor.execute("""CREATE INDEX IF NOT EXISTS countries_last_word ON countries(last_word)""")
     
-    reader = csv.reader(open(geodict_config.source_folder+'countrypositions.csv', 'rb'))
+    reader = unicode_csv_reader(open(geodict_config.source_folder+'countrypositions.csv', 'rb'))
     country_positions = {}
 
     for row in reader:
@@ -72,7 +76,7 @@ def load_countries(cursor):
 
         country_positions[country_code] = { 'lat': lat, 'lon': lon }
         
-    reader = csv.reader(open(geodict_config.source_folder+'countrynames.csv', 'rb'))
+    reader = unicode_csv_reader(open(geodict_config.source_folder+'countrynames.csv', 'rb'))
 
     for row in reader:
         try:
@@ -93,8 +97,8 @@ def load_countries(cursor):
             last_word, index, skipped = pull_word_from_end(country_name, len(country_name)-1, False)
 
             cursor.execute("""
-                INSERT IGNORE INTO countries (country, country_code, lat, lon, last_word)
-                    values (%s, %s, %s, %s, %s)
+                INSERT OR IGNORE INTO countries (country, country_code, lat, lon, last_word)
+                    values (?, ?, ?, ?, ?)
                 """,
                 (country_name, country_code, lat, lon, last_word))
         
@@ -102,16 +106,16 @@ def load_countries(cursor):
 def load_regions(cursor):
     cursor.execute("""CREATE TABLE IF NOT EXISTS regions (
         region VARCHAR(64),
-        PRIMARY KEY(region),
         region_code CHAR(4),
         country_code CHAR(2),
         lat FLOAT,
         lon FLOAT,
         last_word VARCHAR(32),
-        INDEX(last_word(10)));
+        PRIMARY KEY(region));
     """)
+    cursor.execute("""CREATE INDEX IF NOT EXISTS regions_last_word ON regions(last_word)""")
 
-    reader = csv.reader(open(geodict_config.source_folder+'us_statepositions.csv', 'rb'))
+    reader = unicode_csv_reader(open(geodict_config.source_folder+'us_statepositions.csv', 'rb'))
     us_state_positions = {}
 
     for row in reader:
@@ -124,7 +128,7 @@ def load_regions(cursor):
 
         us_state_positions[region_code] = { 'lat': lat, 'lon': lon }
     
-    reader = csv.reader(open(geodict_config.source_folder+'us_statenames.csv', 'rb'))
+    reader = unicode_csv_reader(open(geodict_config.source_folder+'us_statenames.csv', 'rb'))
 
     country_code = 'US'
 
@@ -147,12 +151,12 @@ def load_regions(cursor):
             last_word, index, skipped = pull_word_from_end(state_name, len(state_name)-1, False)
         
             cursor.execute("""
-                INSERT IGNORE INTO regions (region, region_code, country_code, lat, lon, last_word)
-                    values (%s, %s, %s, %s, %s, %s)
+                INSERT OR IGNORE INTO regions (region, region_code, country_code, lat, lon, last_word)
+                    values (?, ?, ?, ?, ?, ?)
                 """,
                 (state_name, region_code, country_code, lat, lon, last_word))
     
-cursor = get_database_connection()
+cursor = data.get_database_connection()
 
 wipe_and_init_database(cursor)
 

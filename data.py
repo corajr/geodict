@@ -1,25 +1,21 @@
-import MySQLdb, string, StringIO
+import sqlite3, string, StringIO
 import geodict_config
 
 
 def get_database_connection():
-
-    db=MySQLdb.connect(host=geodict_config.host,user=geodict_config.user,passwd=geodict_config.password,port=geodict_config.port)
+    db=sqlite3.connect(geodict_config.database+'.db')
     cursor=db.cursor()
-    cursor.execute('USE '+geodict_config.database+';')
-
     return cursor
-
     
 def get_cities(pulled_word,current_word,country_code,region_code):
     cursor = get_database_connection()
-    select = 'SELECT * FROM cities WHERE last_word=%s'
+    select = 'SELECT * FROM cities WHERE last_word=?'
     values = (pulled_word, )
     if country_code is not None:
-        select += ' AND country=%s'
+        select += ' AND country=?'
 
     if region_code is not None:
-        select += ' AND region_code=%s'
+        select += ' AND region_code=?'
 
     # There may be multiple cities with the same name, so pick the one with the largest population
     select += ' ORDER BY population;'
@@ -33,15 +29,17 @@ def get_cities(pulled_word,current_word,country_code,region_code):
     else:
         values = (current_word, country_code, region_code)
 
-    #print "Calling '"+(select % values)+"'"
+    values = [v.lower() for v in values]
+
     cursor.execute(select, values)
     candidate_rows = cursor.fetchall()
+    # print candidate_rows
 
     name_map = {}
     for candidate_row in candidate_rows:
-        #print candidate_row
+        # print candidate_row
         candidate_dict = get_dict_from_row(cursor, candidate_row)
-        #print candidate_dict
+        # print candidate_dict
         name = candidate_dict['city'].lower()
         name_map[name] = candidate_dict
     return name_map
@@ -86,3 +84,9 @@ def setup_regions_cache():
             regions_cache[last_word] = []
         regions_cache[last_word].append(candidate_dict)
     return regions_cache
+
+def is_initialized(name):
+    cursor = get_database_connection()
+    cursor.execute("SELECT COUNT(*) FROM sqlite_master WHERE name = ?;",[name])
+    return cursor.fetchone()[0] > 0
+

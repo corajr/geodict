@@ -1,16 +1,15 @@
 geodict
 -------
 
-A simple Python library/command-line tool for pulling location information from unstructured text
+A simple Python library/command-line tool for pulling location information from unstructured text. Originally by Pete Warden.
+This version uses SQLite, which is much, much slower (by at least a factor of 10) but eliminates the need for a MySQL server.
 
 Installing
 ----------
 
-This library uses a large geo-dictionary of countries, regions and cities, all stored in a MySQL database. The source data required is included in this project. To get started:
+This library uses a large geo-dictionary of countries, regions and cities, all stored in a SQLite database. The source data required is included in this project. To get started:
 
-- Enter the details of your MySQL server and account into geodict_config.py
-- Install the MySQLdb module for Python ('easy_install MySQL-python' may do the trick)
-- cd into the folder you've unpacked this to, and run ./populate_database.py
+- cd into the folder you've unpacked this to, and run ./populate_sqlite3.py
 
 This make take several minutes, depending on your machine, since there's over 2 million cities
 
