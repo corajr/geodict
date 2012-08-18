@@ -15,13 +15,13 @@ def wipe_and_init_database(cursor):
 
 def load_cities(cursor):
     cursor.execute("""CREATE TABLE IF NOT EXISTS cities (
-        city VARCHAR(80),
-        country CHAR(2),
-        region_code CHAR(2),
+        city VARCHAR(80) COLLATE NOCASE,
+        country CHAR(2) COLLATE NOCASE,
+        region_code CHAR(2) COLLATE NOCASE,
         population INT,
         lat FLOAT,
         lon FLOAT,
-        last_word VARCHAR(32),
+        last_word VARCHAR(32) COLLATE NOCASE,
         PRIMARY KEY(city, country));
     """)
     cursor.execute("""CREATE INDEX IF NOT EXISTS cities_last_word ON cities(last_word)""")
@@ -54,11 +54,11 @@ def load_cities(cursor):
 
 def load_countries(cursor):
     cursor.execute("""CREATE TABLE IF NOT EXISTS countries (
-        country VARCHAR(64),
-        country_code CHAR(2),
+        country VARCHAR(64) COLLATE NOCASE,
+        country_code CHAR(2) COLLATE NOCASE,
         lat FLOAT,
         lon FLOAT,
-        last_word VARCHAR(32),
+        last_word VARCHAR(32) COLLATE NOCASE,
         PRIMARY KEY(country));
     """)
     cursor.execute("""CREATE INDEX IF NOT EXISTS countries_last_word ON countries(last_word)""")
@@ -105,12 +105,12 @@ def load_countries(cursor):
 
 def load_regions(cursor):
     cursor.execute("""CREATE TABLE IF NOT EXISTS regions (
-        region VARCHAR(64),
-        region_code CHAR(4),
-        country_code CHAR(2),
+        region VARCHAR(64) COLLATE NOCASE,
+        region_code CHAR(4) COLLATE NOCASE,
+        country_code CHAR(2) COLLATE NOCASE,
         lat FLOAT,
         lon FLOAT,
-        last_word VARCHAR(32),
+        last_word VARCHAR(32) COLLATE NOCASE,
         PRIMARY KEY(region));
     """)
     cursor.execute("""CREATE INDEX IF NOT EXISTS regions_last_word ON regions(last_word)""")
@@ -151,16 +151,18 @@ def load_regions(cursor):
             last_word, index, skipped = pull_word_from_end(state_name, len(state_name)-1, False)
         
             cursor.execute("""
-                INSERT OR IGNORE INTO regions (region, region_code, country_code, lat, lon, last_word)
+                INSERT OR REPLACE INTO regions (region, region_code, country_code, lat, lon, last_word)
                     values (?, ?, ?, ?, ?, ?)
                 """,
                 (state_name, region_code, country_code, lat, lon, last_word))
     
 cursor = data.get_database_connection()
 
-wipe_and_init_database(cursor)
+# wipe_and_init_database(cursor)
 
 load_cities(cursor)
 load_countries(cursor)
 load_regions(cursor)
+
+cursor.connection.commit()
 

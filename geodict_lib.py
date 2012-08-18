@@ -27,6 +27,40 @@ if data.is_initialized("countries"):
 if data.is_initialized("regions"):
     regions_cache   = data.setup_regions_cache()
 
+
+def find_location_in_string(text):
+    # try to return one location from a short string
+
+    result = None
+
+    tokens = [x.lower().strip(".,") for x in text.split()][::-1]
+
+    cursor = data.get_database_connection()
+    select = "SELECT * FROM cities WHERE last_word = ?"
+
+    possible_country = None
+    possible_region = None
+    city = None
+
+    possible_cities = []
+    for token in tokens:
+        if token in countries_cache:
+            possible_country = countries_cache[token][0]['country_code'].lower()
+        elif token in regions_cache:
+            possible_region = regions_cache[token][0]['region_code'].lower()
+        else:
+            possible_cities.append(token)
+    print possible_cities, possible_region, possible_country
+    for token in possible_cities:
+        cities = data.get_cities(token, token, possible_country, possible_region)
+        if len(cities) > 0:
+            city = sorted(cities.values(), key=lambda x: x['population'])[0]
+            break
+
+    if city is not None:
+        result = city
+    return result
+
 def find_locations_in_text(text):
 
     current_index = len(text)-1
