@@ -50,7 +50,6 @@ def find_location_in_string(text):
             possible_region = regions_cache[token][0]['region_code'].lower()
         else:
             possible_cities.append(token)
-    print possible_cities, possible_region, possible_country
     for token in possible_cities:
         cities = data.get_cities(token, token, possible_country, possible_region)
         if len(cities) > 0:
@@ -58,7 +57,19 @@ def find_location_in_string(text):
             break
 
     if city is not None:
-        result = city
+        current_result = {
+            'found_tokens': [],
+        }
+        lat = city['lat']
+        lon = city['lon']
+                
+        current_result['found_tokens'].append({
+            'type': 'CITY',
+            'lat': lat,
+            'lon': lon,
+            'matched_string': text,
+        })
+        result = current_result
     return result
 
 def find_locations_in_text(text):
